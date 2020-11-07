@@ -6,7 +6,7 @@ from discord.ext.commands import Bot
 
 def setup():
     """
-    Configures the bot.
+    Configures the bot-o.
     If a configuration exists, this function will serve to edit the existing config.
     :return:
     """
@@ -23,7 +23,7 @@ def setup():
 
     # Clear the screen and display the banner
     os.system("cls||clear")
-    print("Welcome to Mercury! Lets configure the bot!")
+    print("Welcome to Mercury! Lets configure the bot-o!")
     print("Press [Enter] to keep the current setting...")
 
     # Attempt to load the config file.

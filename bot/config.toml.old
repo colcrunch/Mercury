@@ -1,0 +1,15 @@
+[bot]
+token = "b"
+prefix = "/"
+extensions = ["hell", "no", "there", "should", "be", "six"]
+
+
+[db]
+host = "127.0.0.1"
+port = "5432"
+user = "mercury_bot"
+pass = "password"
+db_name = "mercury"
+
+[logging]
+level = "INFO"

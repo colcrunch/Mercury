@@ -77,4 +77,4 @@ celerybeat-schedule
 .flake8
 .pylintrc
 Makefile
-config.toml
+bot/config.toml
