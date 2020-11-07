@@ -12,23 +12,23 @@ def setup():
     """
 
     # Determine if this is the first run.
-    if os.path.exists("config.toml"):
+    if os.path.exists("bot/config.toml"):
         print("Configuration file already exists. Would you like to edit it?")
         x = input("[Y/N]: ")
         if x.lower() != "y":
             print("Setup Cancelled!")
             return
     else:
-        shutil.copy("config.toml.example", "config.toml")
+        shutil.copy("bot/config.toml.example", "bot/config.toml")
 
     # Clear the screen and display the banner
     os.system("cls||clear")
-    print("Welcome to Mercury! Lets configure the bot-o!")
+    print("Welcome to Mercury! Lets configure the bot!")
     print("Press [Enter] to keep the current setting...")
 
     # Attempt to load the config file.
     try:
-        with open('config.toml', 'r') as c:
+        with open('bot/config.toml', 'r') as c:
             config = c.read()
         config = loads(config)
     except Exception as e:
@@ -47,7 +47,7 @@ def setup():
     # Save the config file.
     try:
         final = dumps(config)
-        with open('config.toml', 'w') as c:
+        with open('bot/config.toml', 'w') as c:
             c.write(final)
     except Exception as e:
         print(f"An error occurred when saving the configuration! Error: {e}")
