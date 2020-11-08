@@ -3,6 +3,10 @@ import shutil
 import os
 from discord.ext.commands import Bot
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def setup():
     """
@@ -60,4 +64,6 @@ def setup():
 class MercuryBot(Bot):
     def __init__(self, config, *args, **kwargs):
         self.config = config
+        self.token = config['bot']['token']
+        self.prefix = config['bot']['prefix']
         pass
