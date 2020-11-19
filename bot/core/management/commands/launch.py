@@ -33,6 +33,9 @@ class Command(BaseCommand):
             # Run the setup process then load the config.
             # We will always do this on the first run.
             setup()
+
+            print("Bot configuration complete... Starting Bot....")
+
             with open("bot/config.toml", "r") as c:
                 config = loads(c.read())
         else:
@@ -43,3 +46,6 @@ class Command(BaseCommand):
         if config is None:
             # If for some reason config is still None, then raise a CommandError
             raise CommandError(returncode=1)
+
+        mBot = MercuryBot(config=config)
+        MercuryBot.run(mBot)
