@@ -1,16 +1,18 @@
 from tomlkit import loads, dumps
-import shutil
-import os
 from discord.ext.commands import Bot
+from discord import Game
 
+import os
+import shutil
 import logging
+import datetime
 
 logger = logging.getLogger(__name__)
 
 
 def setup():
     """
-    Configures the bot-o.
+    Configures the bot.
     If a configuration exists, this function will serve to edit the existing config.
     :return:
     """
@@ -64,6 +66,44 @@ def setup():
 class MercuryBot(Bot):
     def __init__(self, config, *args, **kwargs):
         self.config = config
+
+        self.description = "A discord.py bot to do some stuff."
+
         self.token = config['bot']['token']
         self.prefix = config['bot']['prefix']
-        pass
+        self.started = datetime.datetime.utcnow()
+
+        super().__init__(command_prefix=self.prefix, description=self.description, pm_help=None, *args, **kwargs)
+
+    def run(self):
+        super().run(self.token)
+
+    async def on_ready(self):
+        # Load Extensions
+        try:
+            self.load_extension(f'bot.core.cog')    # Core cog(s) should always be loaded.
+        except Exception as e:
+            logger.fatal("Core cog failed to load. Exception:")
+            logger.fatal(e)
+            print("Core cog could not be loaded. Please check the logs for more information.")
+
+            return exit(1)
+        else:
+            pass
+
+        for extension in self.config['bot']['extensions']:
+            try:
+                self.load_extension(f'bot.cogs.{extension}.cog')
+            except Exception as e:
+                logger.critical(f'{extension} failed to load. Exception:')
+                logger.critical(e)
+                print(f'{extension} failed to load. Check logs for details.')
+            else:
+                logger.debug(f'{extension} loaded')
+                print(f'{extension} has loaded successfully.')
+
+        # Set the presence for the bot.
+        await self.change_presence(activity=Game(name=self.config['bot']['presence']))
+        logger.info(f"Bot started! (U: {self.user.name} I: {self.user.id})")
+        print(f"Bot Started! (U: {self.user.name} I: {self.user.id})")
+
