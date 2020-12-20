@@ -22,6 +22,23 @@ class AdminCommands(commands.Cog):
         await ctx.send("Bot shutting down!")
         return exit(0)
 
+    @commands.command(aliases=['ld'], hidden=True)
+    @commands.is_owner()
+    async def loaded(self, ctx):
+        """Lists loaded extensions and cogs."""
+        extensions = "\n".join([x.split(".")[-2] for x in list(self.bot.extensions)])
+        cogs = "\n".join(list(self.bot.cogs))
+
+        ret_str = (f"```"
+                   f"Extensions: \n"
+                   f"{extensions} \n\n"
+                   f"Cogs: \n"
+                   f"{cogs} \n\n"
+                   f"{len(self.bot.extensions)} Extensions loaded with {len(self.bot.cogs)} Cogs."
+                   f"```")
+
+        return await ctx.send(ret_str)
+
 
 class Core(commands.Cog):
     def __init__(self, bot):
