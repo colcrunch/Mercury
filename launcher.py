@@ -2,7 +2,6 @@ import argparse
 from tomlkit import loads
 from os import path
 from bot import MercuryBot, setup
-from tortoise import run_async
 
 parser = argparse.ArgumentParser(description="Mercury Discord Bot Launcher")
 parser.add_argument("--setup", action='store_true', default=False, help="Runs the bot setup.")
