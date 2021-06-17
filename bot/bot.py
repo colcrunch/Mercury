@@ -1,7 +1,9 @@
 from tomlkit import loads, dumps
 from discord.ext.commands import Bot
+from discord.ext import commands
 from discord import Game
 
+import traceback
 import os
 import shutil
 import logging
@@ -106,4 +108,20 @@ class MercuryBot(Bot):
         await self.change_presence(activity=Game(name=self.config['bot']['presence']))
         logger.info(f"Bot started! (U: {self.user.name} I: {self.user.id})")
         print(f"Bot Started! (U: {self.user.name} I: {self.user.id})")
+
+    async def on_command_error(self, context, exception):
+        if isinstance(exception, commands.NoPrivateMessage):
+            await context.author.send('This command cannot be used in private messages.')
+        elif isinstance(exception, commands.DisabledCommand):
+            await context.author.send('Sorry. This command is disabled and cannot be used.')
+        elif isinstance(exception, commands.UserInputError):
+            await context.send(exception)
+        elif isinstance(exception, commands.NotOwner):
+            logger.error('%s tried to run %s but is not the owner' % (context.author, context.command.name))
+        elif isinstance(exception, commands.CommandInvokeError):
+            logger.error('In %s:' % context.command.qualified_name)
+            logger.error(''.join(traceback.format_tb(exception.original.__traceback__)))
+            logger.error('{0.__class__.__name__}: {0}'.format(exception.original))
+
+
 

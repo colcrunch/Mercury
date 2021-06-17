@@ -1,8 +1,13 @@
 import discord
 from discord.ext import commands
 
+from .models import *
+from . import checks
+
 import logging
 from datetime import datetime
+from django.core.cache import cache
+from asgiref.sync import async_to_sync
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +43,47 @@ class AdminCommands(commands.Cog):
                    f"```")
 
         return await ctx.send(ret_str)
+
+    @commands.command(aliases=['ad'], hidden=True)
+    @checks.guild_owner()
+    async def set_admin_role(self, ctx, role: discord.Role):
+        """
+        Defines the Guild's bot admin role.
+        """
+        if cache.get(f'{ctx.guild.id}:botAdmin') is not None or len(BotAdminRole.objects.get(pk=ctx.guild.id)) is not 0:
+            return ctx.send(f"Admin role already set for `{ctx.guild.name}` to change it, please first unset the admin"
+                            f" role using the `unset_admin_role` command.")
+
+        # Set the admin role in the database
+        role = BotAdminRole(guild_id=ctx.guild.id, role_id=role.id)
+        role.save()
+
+        # Add the admin role to the cache!
+        # For testing purposes... lets leave this out for a second
+
+        return await ctx.send(f"Testing cache: {cache.get('test_key')}")
+
+    @commands.command(aliases=['rad'], hidden=True)
+    @checks.guild_owner()
+    async def unset_admin_role(self, ctx):
+        """
+        Removes the Guild's bot admin role.
+        """
+        admin_role = cache.get(f'{ctx.guild.id}:botAdmin')
+        if admin_role is None and len(BotAdminRole.objects.get(pk=ctx.guild.id)) is 0:
+            return ctx.send(f"Admin role for `{ctx.guild.name}` is not yet set, and thus can not be unset.\n"
+                            f"To set an admin role for `{ctx.guild.name}` please run the `set_admin_role`"
+                            f" command from any channel in `{ctx.guild.name}`")
+        # Get the role from discord.
+        role = ctx.guild.get_role(admin_role).name or admin_role
+
+        # Delete the BotAdminRole entity from the DB.
+        BotAdminRole.objects.delete(pk=ctx.guild.id)
+
+        # Delete any record of the admin role from the cache.
+        cache.delete(f'{ctx.guild.id}:botAdmin')
+        return await ctx.send(f"Admin role for `{ctx.guild.name}` successfully unset. (Previous admin role was "
+                              f"{role.name})")
 
 
 class Core(commands.Cog):
