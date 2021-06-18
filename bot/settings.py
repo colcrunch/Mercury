@@ -26,6 +26,7 @@ from tomlkit import loads
 # Load the bot config.
 conf = False
 if path.exists('bot/config.toml'):
+    conf = True
     with open("bot/config.toml", "r") as c:
         config = loads(c.read())
 
@@ -58,7 +59,7 @@ INSTALLED_APPS = [
 ]
 
 if conf:
-    INSTALLED_APPS += [f'bot.cogs.{x}' for x in conf['bot']['extensions']]
+    INSTALLED_APPS += [f'bot.cogs.{x}' for x in config['bot']['extensions']]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -95,7 +96,7 @@ WSGI_APPLICATION = 'bot.wsgi.application'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 if conf:
-    db_set = conf['db']
+    db_set = config['db']
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -139,7 +140,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+        'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
         'LOCATION': '127.0.0.1:11211',
     }
 }

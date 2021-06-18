@@ -7,9 +7,17 @@ from . import checks
 import logging
 from datetime import datetime
 from django.core.cache import cache
-from asgiref.sync import async_to_sync
+from asgiref.sync import sync_to_async
 
 logger = logging.getLogger(__name__)
+
+
+def _get_botadmins(pk):
+    return tuple(BotAdminRole.objects.filter(pk=pk))
+
+
+def _save_role(guild_id, role_id):
+    return BotAdminRole.objects.create(guild_id=guild_id, role_id=role_id)
 
 
 class AdminCommands(commands.Cog):
@@ -50,13 +58,14 @@ class AdminCommands(commands.Cog):
         """
         Defines the Guild's bot admin role.
         """
-        if cache.get(f'{ctx.guild.id}:botAdmin') is not None or len(BotAdminRole.objects.get(pk=ctx.guild.id)) is not 0:
+
+        roles = await sync_to_async(_get_botadmins, thread_sensitive=True)(pk=ctx.guild.id)
+        if cache.get(f'{ctx.guild.id}:botAdmin') is not None or len(roles) is not 0:
             return ctx.send(f"Admin role already set for `{ctx.guild.name}` to change it, please first unset the admin"
                             f" role using the `unset_admin_role` command.")
 
         # Set the admin role in the database
-        role = BotAdminRole(guild_id=ctx.guild.id, role_id=role.id)
-        role.save()
+        role = await sync_to_async(_save_role, thread_sensitive=True)(guild_id=ctx.guild.id, role_id=role.id)
 
         # Add the admin role to the cache!
         # For testing purposes... lets leave this out for a second
