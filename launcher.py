@@ -10,6 +10,9 @@ args = parser.parse_args()
 
 
 def launch():
+    if args.migrate:
+        os.system("aerich upgrade")
+        return
     if args.setup:
         setup()
     if not path.exists("config.toml"):
@@ -20,8 +23,6 @@ def launch():
     else:
         with open("config.toml", "r") as c:
             config = loads(c.read())
-    if args.migrate:
-        pass
     return
 
 
