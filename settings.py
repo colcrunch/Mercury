@@ -8,6 +8,7 @@
 from pathlib import Path
 from os import path
 from tomlkit import loads
+import logging
 
 # Load the bot config.
 conf = False
@@ -30,5 +31,6 @@ if conf:
             }
         }
     }
+    log_level = logging.getLevelName(config['logging']['level'])
 else:
     TORTOISE_ORM = None
