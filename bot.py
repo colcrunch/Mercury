@@ -83,7 +83,7 @@ class MercuryBot(Bot):
             activity=discord.Activity(name=config['bot']['status'], type=discord.ActivityType.playing),
             status=discord.Status.idle,
             *args,
-            *kwargs
+            **kwargs
         )
 
         # Load extensions
