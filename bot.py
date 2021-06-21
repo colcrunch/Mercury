@@ -1,7 +1,14 @@
+import discord
 from tomlkit import loads, dumps
-import shutil
-import os
 from discord.ext.commands import Bot
+from discord.ext import commands
+from utils.loggers import get_logger
+
+import os
+import traceback
+import shutil
+import datetime
+import logging
 
 
 def setup():
@@ -60,4 +67,63 @@ def setup():
 class MercuryBot(Bot):
     def __init__(self, config, *args, **kwargs):
         self.config = config
-        pass
+
+        self.description = "A discord.py bot to do some stuff."
+
+        self.token = config['bot']['token']
+        self.prefix = config['bot']['prefix']
+        self.started = datetime.datetime.utcnow()
+
+        self.logger = get_logger(__name__)
+
+        super().__init__(
+            command_prefix=self.prefix,
+            description=self.description,
+            pm_help=None,
+            activity=discord.Activity(name=config['bot']['status'], type=discord.ActivityType.playing),
+            status=discord.Status.idle,
+            *args,
+            *kwargs
+        )
+
+        # Load extensions
+        try:
+            self.load_extension(f'cogs.core.cog')
+        except Exception as e:
+            self.logger.fatal("Core cog failed to load. Exception:")
+            self.logger.fatal(e)
+            print("Core cog could not be loaded. Please check the logs for more information.")
+
+            return exit(1)
+
+        for extension in self.config['bot']['extensions']:
+            try:
+                self.load_extension(f'cogs.{extension}.cog')
+            except Exception as e:
+                self.logger.critical(f"{extension} failed to load. Exception:")
+                self.logger.critical(e)
+                print(f"{extension} failed to load. Check logs for more details.")
+            else:
+                self.logger.info(f'{extension} loaded.')
+                print(f"{extension} loaded successfully.")
+
+    def run(self):
+        super().run(self.token)
+
+    async def on_ready(self):
+        self.logger.info(f"Bot Started! (U: {self.user.name} I: {self.user.id})")
+        print(f"Bot Started! (U: {self.user.name} I: {self.user.id})")
+
+    async def on_command_error(self, context, exception):
+        if isinstance(exception, commands.NoPrivateMessage):
+            await context.author.send('This command cannot be used in private messages.')
+        elif isinstance(exception, commands.DisabledCommand):
+            await context.author.send('Sorry. This command is disabled and cannot be used.')
+        elif isinstance(exception, commands.UserInputError):
+            await context.send(exception)
+        elif isinstance(exception, commands.NotOwner):
+            self.logger.error('%s tried to run %s but is not the owner' % (context.author, context.command.name))
+        elif isinstance(exception, commands.CommandInvokeError):
+            self.logger.error('In %s:' % context.command.qualified_name)
+            self.logger.error(''.join(traceback.format_tb(exception.original.__traceback__)))
+            self.logger.error('{0.__class__.__name__}: {0}'.format(exception.original))

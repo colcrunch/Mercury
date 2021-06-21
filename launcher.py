@@ -1,4 +1,5 @@
 import argparse
+import os
 from tomlkit import loads
 from os import path
 from bot import MercuryBot, setup
@@ -23,6 +24,9 @@ def launch():
     else:
         with open("config.toml", "r") as c:
             config = loads(c.read())
+
+        m_bot = MercuryBot(config=config)
+        MercuryBot.run(m_bot)
     return
 
 
