@@ -1,6 +1,7 @@
 [bot]
 token = ""
 prefix = "/"
+status = "Message under the bot name."
 extensions = []
 
 
