@@ -20,6 +20,7 @@ multidict==5.1.0
 pyaml==20.4.0
 pyasn1==0.4.8
 pydantic==1.8.2
+pymemcache==3.4.4
 pyparsing==2.4.7
 pypika-tortoise==0.1.1
 pyswagger==0.8.39
