@@ -94,7 +94,7 @@ class MercuryBot(Bot):
             self.logger.fatal(e)
             print("Core cog could not be loaded. Please check the logs for more information.")
 
-            return exit(1)
+            exit(1)
 
         for extension in self.config['bot']['extensions']:
             try:
