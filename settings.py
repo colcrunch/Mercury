@@ -5,8 +5,8 @@
 ********************************************
 '''
 
-from pathlib import Path
-from os import path
+import os
+from os import path, listdir
 from tomlkit import loads
 import logging
 
@@ -31,6 +31,12 @@ if conf:
             }
         }
     }
+    TORTOISE_ORM["apps"]["models"]["models"] += [
+        f"cogs.{name}.models"
+        for name in listdir('cogs/')
+        if os.path.isdir(os.path.join('cogs/', name)) and not name.__contains__("__")
+    ]
+
     log_level = logging.getLevelName(config['logging']['level'])
 else:
     TORTOISE_ORM = None
