@@ -2,7 +2,10 @@ import discord
 from tomlkit import loads, dumps
 from discord.ext.commands import Bot
 from discord.ext import commands
+
+import settings
 from utils.loggers import get_logger
+from tortoise import Tortoise
 
 import os
 import traceback
@@ -85,6 +88,8 @@ class MercuryBot(Bot):
             *args,
             **kwargs
         )
+
+        self.loop.create_task(Tortoise.init(config=settings.TORTOISE_ORM))  # Connect to the database.
 
         # Load extensions
         try:
