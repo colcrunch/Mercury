@@ -8,7 +8,6 @@ from pathlib import Path
 from .models import *
 from utils import checks
 from utils.loggers import get_logger
-from utils.cache import client as cache
 
 logger = get_logger(__name__)
 
@@ -57,7 +56,7 @@ class AdminCommands(commands.Cog):
         """
 
         roles = await BotAdminRole.filter(pk=ctx.guild.id)
-        if cache.get(f'{ctx.guild.id}:botAdmin') is not None or len(roles) is not 0:
+        if len(roles) is not 0:
             return await ctx.send(f'Admin role already set for `{ctx.guild.name}`. '
                                   f'To change it, please first unset the admin role'
                                   f' using the `unset_admin_role` command.')
@@ -65,9 +64,6 @@ class AdminCommands(commands.Cog):
         # Set the Admin Role.
         role = BotAdminRole(guild_id=ctx.guild.id, role_id=role.id)
         await role.save()
-
-        # Set the Cache
-        cache.set(f'{ctx.guild.id}:botAdmin', role)
 
         return await ctx.send(f"Set admin role for `{ctx.guild.name}`.")
 
@@ -80,7 +76,7 @@ class AdminCommands(commands.Cog):
         """
 
         admin_role = await BotAdminRole.filter(pk=ctx.guild.id)
-        if cache.get(f'{ctx.guild.id}:botAdmin') is None and len(admin_role) is 0:
+        if len(admin_role) is 0:
             return await ctx.send(f"Admin role for `{ctx.guild.name}` is not yet set. To set the admin role"
                                   f" for `{ctx.guild.name}` please run the `set_admin_role` command.")
 
@@ -89,8 +85,6 @@ class AdminCommands(commands.Cog):
 
         await admin_role[0].delete()
 
-        # Delete record from cache
-        cache.delete(f'{ctx.guild.id}:botAdmin')
         return await ctx.send(f"Admin role for `{ctx.guild.name}` successfully unset. (Previous Role: `{name}`)")
 
     @commands.command(aliases=['lad'], hidden=True)
@@ -171,6 +165,7 @@ class Core(commands.Cog):
         return embed
 
     @commands.command(hidden=True)
+    @checks.is_admin()
     async def ping(self, ctx):
         """Just a test command."""
         return await ctx.send("Pong!")
