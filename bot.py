@@ -70,6 +70,9 @@ def setup():
 class MercuryBot(Bot):
     def __init__(self, config, *args, **kwargs):
         self.config = config
+        intents = discord.Intents.default()
+        intents.members = True
+        intents.presences = True
 
         self.description = "A discord.py bot to do some stuff."
 
@@ -85,6 +88,7 @@ class MercuryBot(Bot):
             pm_help=None,
             activity=discord.Activity(name=config['bot']['status'], type=discord.ActivityType.playing),
             status=discord.Status.idle,
+            intents=intents,
             *args,
             **kwargs
         )
