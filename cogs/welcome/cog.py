@@ -1,4 +1,5 @@
 import discord
+import asyncio
 from discord.ext import commands
 from discord.ext.commands import Cog
 
@@ -105,7 +106,12 @@ class Welcome(Cog, command_attrs=dict(hidden=True)):
         formatted_msg = message.message.format(**fmt)
 
         channel = member.guild.get_channel(channel.channel_id)
-        return await channel.send(formatted_msg)
+
+        await asyncio.sleep(10)
+
+        if len(member.roles) == 1:
+            return await channel.send(formatted_msg)
+        return
 
 
 def setup(authbot):
