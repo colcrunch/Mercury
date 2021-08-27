@@ -96,11 +96,9 @@ class Welcome(Cog, command_attrs=dict(hidden=True)):
         """
         Sends the guild welcome message to a new member when they join.
         """
-        logger.debug("Member Join Listener Called")
         guild = member.guild.id
         channel = await WelcomeChannel.filter(pk=guild).first()
         message = await WelcomeMessage.filter(pk=guild).first()
-        logger.debug(f"{channel}   |   {message}")
 
         fmt = {'mention': member.mention}
         formatted_msg = message.message.format(**fmt)
