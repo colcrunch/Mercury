@@ -37,7 +37,7 @@ class Welcome(Cog, command_attrs=dict(hidden=True)):
 
         return await ctx.send(f'{ctx.channel.mention} has been set as the welcome channel for `{ctx.guild.name}`.')
 
-    @commands.command(aliases=['delete_wc','wcd'])
+    @commands.command(aliases=['delete_wc', 'wcd'])
     @checks.is_admin()
     async def unset_welcome_channel(self, ctx):
         """
@@ -48,7 +48,8 @@ class Welcome(Cog, command_attrs=dict(hidden=True)):
         channels = await WelcomeChannel.filter(pk=guild_id)
         if len(channels) is 0:
             return await ctx.send(f'Welcome channel not set for `{ctx.guild.name}.'
-                                  f' Use the `set_welcome_channel` command to set it.')
+                                  f' Use the `set_welcome_channel` command '
+                                  f'from the target channel to set it.')
 
         await channels[0].delete()
         return await ctx.send(f'Unset welcome channel for `{ctx.guild.name}`')
@@ -112,9 +113,9 @@ class Welcome(Cog, command_attrs=dict(hidden=True)):
         return
 
 
-def setup(authbot):
-    authbot.add_cog(Welcome(authbot))
+def setup(bot):
+    bot.add_cog(Welcome(bot))
 
 
-def teardown(authbot):
-    authbot.remove_cog(Welcome)
+def teardown(bot):
+    bot.remove_cog(Welcome)
