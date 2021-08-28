@@ -1,4 +1,4 @@
-aerich==0.5.3
+aerich>=0.5.3
 aiohttp==3.7.4.post0
 aiosqlite==0.16.1
 async-timeout==3.0.1

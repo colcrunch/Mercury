@@ -2,6 +2,7 @@ import discord
 from tomlkit import loads, dumps
 from discord.ext.commands import Bot
 from discord.ext import commands
+from esipy import EsiApp
 
 import settings
 from utils.loggers import get_logger
@@ -73,6 +74,8 @@ class MercuryBot(Bot):
         intents = discord.Intents.default()
         intents.members = True
         intents.presences = True
+        app = EsiApp()
+        self.esi_app = app.get_latest_swagger
 
         self.description = "A discord.py bot to do some stuff."
 

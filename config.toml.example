@@ -3,6 +3,7 @@ token = ""
 prefix = "/"
 status = "Message under the bot name."
 extensions = []
+user_agent = "contact information"
 
 
 [db]
