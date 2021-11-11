@@ -1,4 +1,7 @@
+import traceback
+
 import discord
+import aiohttp
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog
 from esipy import EsiClient
@@ -67,39 +70,44 @@ class TheraWatch(Cog, command_attrs=dict(hidden=True)):
         Checks if the ID provided is valid for the type provided.
         :param location_type: string
         :param location_id: integer
-        :return: boolean
+        :return: Thera location model.
         """
         RANGES = {
             'region': [10000000, 13000000],
             'constellation': [20000000, 23000000],
             'system': [30000000, 33000000]
         }
-        if not RANGES[location_type][0] <= location_id <= RANGES[location_type][1]:
+        if not RANGES[location_type][0] <= location_id <= RANGES[location_type][1] and location_id is not 0:
             return -1
 
         if await self.TYPE_MODELS[location_type].filter(pk=location_id).exists():
             return await self.TYPE_MODELS[location_type].filter(pk=location_id).first()
 
-        post_op = self.bot.esi_app.op['post_universe_names'](ids=[location_id])
-        response = self.esi.request(post_op)
-        if location_type not in response.data[0]['category']:
-            logger.debug(response.data)
-            return -1
-        model_kwargs = {
-            f'{location_type}_id': response.data[0]['id'],
-            'name': response.data[0]['name']
-        }
-        location = self.TYPE_MODELS[location_type](**model_kwargs)
-        await location.save()
+        if location_id is not 0:
+            post_op = self.bot.esi_app.op['post_universe_names'](ids=[location_id])
+            response = self.esi.request(post_op)
+            if location_type not in response.data[0]['category']:
+                logger.debug(response.data)
+                return -1
+            model_kwargs = {
+                f'{location_type}_id': response.data[0]['id'],
+                'name': response.data[0]['name']
+            }
+            location = self.TYPE_MODELS[location_type](**model_kwargs)
+            await location.save()
+        else:
+            # If we want to add all regions take care of this special case.
+            location = self.TYPE_MODELS[location_type](name="All Regions", region_id=0)
+            await location.save()
 
         return location
 
     async def location_from_name(self, location_type: str, location_name: str):
         """
-        Returns the ID for a location using its name.
+        Returns the location object for a location using its name.
         :param location_type: string
         :param location_name: string
-        :return: integer
+        :return: Thera location model.
         """
         plural = f'{location_type}s'
 
@@ -107,17 +115,22 @@ class TheraWatch(Cog, command_attrs=dict(hidden=True)):
         if await self.TYPE_MODELS[location_type].filter(name=location_name).exists():
             return await self.TYPE_MODELS[location_type].filter(name=location_name).first()
 
-        # Get the system ID from ESI.
-        post_op = self.bot.esi_app.op['post_universe_ids'](names=[location_name])
-        response = self.esi.request(post_op)
-        if plural not in response.data:
-            return -1
-        model_kwargs = {
-            f'{location_type}_id': response.data[plural][0]['id'],
-            'name': response.data[plural][0]['name']
-        }
-        location = self.TYPE_MODELS[location_type](**model_kwargs)
-        await location.save()
+        if location_name.lower() != "all regions":
+            # Get the system ID from ESI.
+            post_op = self.bot.esi_app.op['post_universe_ids'](names=[location_name])
+            response = self.esi.request(post_op)
+            if plural not in response.data:
+                return -1
+            model_kwargs = {
+                f'{location_type}_id': response.data[plural][0]['id'],
+                'name': response.data[plural][0]['name']
+            }
+            location = self.TYPE_MODELS[location_type](**model_kwargs)
+            await location.save()
+        else:
+            # If we want to add all regions take care of this special case.
+            location = self.TYPE_MODELS[location_type](name="All Regions", region_id=0)
+            await location.save()
 
         return location
 
@@ -274,7 +287,7 @@ class TheraWatch(Cog, command_attrs=dict(hidden=True)):
 
     @commands.command(aliases=['tr', 'treg'])
     @checks.is_admin()
-    async def add_region(self, ctx, action, *, region):
+    async def thera_region(self, ctx, action, *, region):
         """
         Add or remove a watchlisted region.
             Both names and IDs accepted.
@@ -322,8 +335,28 @@ class TheraWatch(Cog, command_attrs=dict(hidden=True)):
 
     @tasks.loop(seconds=60.0)
     async def thera(self):
-        self.last_thera = 7
-        pass
+        url = 'https://www.eve-scout.com/api/wormholes'
+        try:
+            async with aiohttp.ClientSession() as session:
+                resp = await get(session, url)
+            hole = list(resp['resp'])[0]
+            hole_id = hole['id']
+            source = hole['sourceSolarSystem']
+            if self.last_thera == hole_id:
+                pass    # Do nothing
+            elif source['name'] == "Thera":
+                self.last_thera = hole_id   # Ensure we keep track of the last thera id
+                destination = hole['destinationSolarSystem']
+                if destination['id'] in self.channels['systems']:
+                    await self.process_hole(hole)
+                elif destination['constellationID'] in self.channels['constellations']:
+                    await self.process_hole(hole)
+                elif destination['regionId'] in self.channels['regions'] or 0 in self.channels['regions']:
+                    await self.process_hole(hole)
+
+        except Exception as e:
+            logger.warning("Exception occurred in thera loop.")
+            logger.warning(traceback.format_exc())
 
     @thera.before_loop
     async def before_thera(self):
@@ -345,6 +378,66 @@ class TheraWatch(Cog, command_attrs=dict(hidden=True)):
                 else:
                     last_thera_obj.last_thera = self.last_thera
                     await last_thera_obj.save()
+
+    async def process_hole(self, hole):
+        """
+        Build the embed for a given hole, and build a dict of which channels to send it to.
+        :param hole:
+        :return:
+        """
+        # Pull info from hole dict
+        d_system = hole['destinationSolarSystem']
+        hole_type = hole['destinationWormholeType']['name']
+        if hole_type == 'K162':
+            hole_type = hole['sourceWormholeType']['name']
+        system = d_system['name']
+        region = d_system['region']['name']
+        c_id = d_system['constellationID']
+        try:
+            c_name = self.esi.request(
+                self.bot.esi_app.op['get_universe_constellations_constellation_id'](constellation_id=c_id)
+            ).data['name']
+        except:
+            print("oops")
+        in_sig = hole['wormholeDestinationSignatureId']
+        out_sig = hole['signatureId']
+
+        # Build Discord Embed
+        embed = discord.Embed(title="Thera Alert", color=discord.Color.blurple())
+        embed.set_author(name='EVE-Scout', icon_url='http://games.chruker.dk/eve_online/graphics/ids/128/20956.jpg')
+        embed.set_thumbnail(url='https://www.eve-scout.com/images/eve-scout-logo.png')
+
+        embed.add_field(name='Region', value=region, inline=True)
+        embed.add_field(name='\u200B', value='\u200B', inline=True)  # Empty Field
+        embed.add_field(name='System (Constellation)', value=f'{system} ({c_name})', inline=True)
+
+        embed.add_field(name='Signature (In - Out)', value=f'`{in_sig}` - `{out_sig}`', inline=True)
+        embed.add_field(name='\u200B', value='\u200B', inline=True)  # Empty Field
+        embed.add_field(name='Type', value=hole_type, inline=True)
+
+        # Build channels for this hole
+        send_channels = {'system': list(), 'constellation': list(), 'region': list()}
+
+        if d_system['id'] in self.channels['systems']:
+            send_channels['system'] += self.channels['systems'][d_system['id']]
+        elif d_system['constellationID'] in self.channels['constellations']:
+            send_channels['constellation'] += self.channels['constellation'][d_system['constellationId']]
+        elif d_system['regionId'] in self.channels['regions'] or 0 in self.channels['regions']:
+            if 0 in self.channels['regions']:   # Send to anyone that specified all regions
+                send_channels['region'] += self.channels['regions'][0]
+            if d_system['regionId'] in self.channels['regions']:    # Send to anyone that specified *this* region.
+                send_channels['region'] += self.channels['regions'][d_system['regionId']]
+
+        return await self.send_thera(embed, send_channels)
+
+    async def send_thera(self, embed: discord.Embed, channels: dict):
+        mentions = {'system': "@everyone", 'constellation': "@here", 'region': ""}
+
+        for k, v in channels.items():
+            for c in v:
+                # Get channel
+                channel = self.bot.get_channel(c.channel_id)
+                await channel.send(content=mentions[k], embed=embed)
 
 
 def setup(bot):
