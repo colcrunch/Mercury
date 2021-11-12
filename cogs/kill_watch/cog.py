@@ -53,11 +53,11 @@ class KillWatch(Cog, command_attrs=dict(hidden=True)):
         """
         systems = await KillEveSystem.all()
         constellations = await KillEveConstellation.all()
-        regions = await  KillEveRegion.all()
-        corporations = await  KillEveCorporation.all()
-        alliances = await  KillEveAlliance.all()
-        characters = await  KillEveCharacter.all()
-        ships = await  KillEveShipType.all()
+        regions = await KillEveRegion.all()
+        corporations = await KillEveCorporation.all()
+        alliances = await KillEveAlliance.all()
+        characters = await KillEveCharacter.all()
+        ships = await KillEveShipType.all()
         self.channels = {
             'systems': {x.system_id: await x.channels.all() for x in systems},
             'constellations': {x.constellation_id: await x.channels.all() for x in constellations},
@@ -309,7 +309,7 @@ class KillWatch(Cog, command_attrs=dict(hidden=True)):
                     await ws.send(json.dumps({'action': 'sub', 'channel': 'killstream'}))
 
                 except Exception as e:
-                    logger.error("Error connecting to zKill's websocket.")
+                    logger.error(f"Error connecting to zKill's websocket: {e}")
                     logger.error(traceback.format_exc())
             try:
                 async for message in ws:
