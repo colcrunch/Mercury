@@ -72,7 +72,7 @@ class KillWatch(Cog, command_attrs=dict(hidden=True)):
         """
         Updates self.channels
         :param id_type:
-        :param the_id:
+        :param id_obj:
         :return:
         """
         plural = f'{id_type}s'
