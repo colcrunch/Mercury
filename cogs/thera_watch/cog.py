@@ -216,14 +216,14 @@ class TheraWatch(Cog, command_attrs=dict(hidden=True)):
                 return await ctx.send(f'The system ID provided is not valid. Please check the ID and try again '
                                       f'or try adding the system by name.')
 
-        if action == 'add':
+        if action.lower() == 'add':
             # Make sure we dont have the same system on the list twice.
             if system_obj in await channel.systems.all():
                 return await ctx.send(f'System `{system}` already on watchlist.')
 
             # Add the system to the list and save the model.
             await channel.systems.add(system_obj)
-        elif action == 'remove':
+        elif action.lower() == 'remove':
             # Make sure the system is on the list.
             if system_obj not in await channel.systems.all():
                 return await ctx.send(f'System `{system}` is not on the watchlist.')
@@ -270,11 +270,11 @@ class TheraWatch(Cog, command_attrs=dict(hidden=True)):
                 return await ctx.send(f'The constellation ID provided is not valid. Please check the ID and '
                                       f'try again or try adding using its name.')
 
-        if action == 'add':
+        if action.lower() == 'add':
             if constellation_obj in await channel.constellations.all():
                 return await ctx.send(f'Constellation `{constellation}` is already on watchlist.')
             await channel.constellations.add(constellation_obj)
-        elif action == 'remove':
+        elif action.lower() == 'remove':
             if constellation_obj not in await channel.constellations.all():
                 return await ctx.send(f'Constellation `{constellation}` is not on the watchlist.')
             await channel.constellations.remove(constellation_obj)
@@ -318,11 +318,11 @@ class TheraWatch(Cog, command_attrs=dict(hidden=True)):
                 return await ctx.send(f'The region ID provided is not valid. Please check the ID and try again '
                                       f'or try adding it by name.')
 
-        if action == 'add':
+        if action.lower() == 'add':
             if region_obj in await channel.regions.all():
                 return await ctx.send(f'`{region}` already on the watchlist.')
             await channel.regions.add(region_obj)
-        elif action == 'remove':
+        elif action.lower() == 'remove':
             if region_obj not in await channel.regions.all():
                 return await ctx.send(f'`{region}` is not on the watchlist.')
             await channel.regions.remove(region_obj)
