@@ -25,7 +25,7 @@ def setup():
     # Determine if this is the first run.
     if os.path.exists("config.toml"):
         print("Configuration file already exists. Would you like to edit it?")
-        x = input("[Y/N]: ")
+        x = input("[y/N]: ")
         if x.lower() != "y":
             print("Setup Cancelled!")
             return
