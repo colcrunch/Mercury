@@ -22,8 +22,8 @@ class AdminCommands(commands.Cog):
         """
         Commands the bot to shutdown.
         """
-        logger.critical(f"Bot shutdown called by {ctx.message.author.id}")
-        print(f"Bot shutdown called by {ctx.message.author.id}")
+        logger.critical(f"Bot shutdown called by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})")
+        print(f"Bot shutdown called by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})")
         await ctx.send("Bot shutting down.")
         return exit(0)
 
@@ -117,7 +117,7 @@ class AdminCommands(commands.Cog):
             elif f'cogs.{ext}.cog' not in tuple(self.bot.extensions):
                 return await ctx.send(f"Extension {ext} not currently loaded.")
             self.bot.unload_extension(f'cogs.{ext}.cog')
-            logger.warning(f'{ext} Unloaded by {ctx.author.name}')
+            logger.warning(f'{ext} Unloaded by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})')
             return await ctx.send(f'{ext} Unloaded.')
         except Exception as e:
             logger.error(f"Error unloading {ext}. Error: {e}")
@@ -137,7 +137,7 @@ class AdminCommands(commands.Cog):
             elif f'cogs.{ext}.cog' in tuple(self.bot.extensions):
                 return await ctx.send(f"Extension {ext} already loaded.")
             self.bot.load_extension(f"cogs.{ext}.cog")
-            logger.warning(f'{ext} loaded by {ctx.author.name}')
+            logger.warning(f'{ext} loaded by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})')
             return await ctx.send(f'{ext} loaded.')
         except Exception as e:
             logger.error(f"Error loading {ext}. Error: {e}")
@@ -178,7 +178,7 @@ class Core(commands.Cog):
         app_info = await self.bot.application_info()
         owner = f'{app_info.owner.name}#{app_info.owner.discriminator}'
         link = 'https://github.com/colcrunch/mercury'
-        about_text = "Mercury is a general use discord bot written in python using discord.py."
+        about_text = "Mercury is a general use discord bot written in python using py-cord."
 
         embed = self.__base_embed(title=f'About {self.bot.user.name}', description=about_text)
         embed.add_field(name="Bot Owner", value=owner, inline=True)
