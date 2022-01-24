@@ -8,6 +8,7 @@ import aiohttp
 from esipy import EsiClient
 
 from utils.loggers import get_logger
+from utils import get_json
 
 logger = get_logger(__name__)
 
@@ -53,16 +54,9 @@ class Market(Cog):
             location = f"region={region_id}"
 
         url = f"https://market.fuzzwork.co.uk/aggregates/?{location}&types={type_id}"
-        headers = {
-            "User-Agent": f"application: Mercury contact: {self.bot.config['bot']['user_agent']}",
-            "content-type": "application/json",
-        }
 
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=headers) as response:
-                resp = await response.json()
-                resp_code = response.status
-                return {'data': resp, "status_code": resp_code}
+            return await get_json(session, url)
 
     async def build_embed(self, type_data: dict, market_data: dict) -> discord.Embed:
         """
@@ -130,7 +124,7 @@ class Market(Cog):
         type_data = self.type_from_name(item_name)
         market_data = await self._get_market_data(type_data['id'])
 
-        return await ctx.send(embed=await self.build_embed(type_data, market_data['data']))
+        return await ctx.send(embed=await self.build_embed(type_data, market_data['resp']))
 
 
 def setup(bot):
