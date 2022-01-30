@@ -376,40 +376,7 @@ class KillWatch(Cog, command_attrs=dict(hidden=True)):
             kill_mail
         )
 
-        if data['victim']['character_name'] is None:
-            title_victim = f'{data["victim"]["corporation_name"]}'
-            if data['victim']['alliance_name'] is not None:
-                title_victim = f'{data["victim"]["corporation_name"]} ({data["victim"]["alliance_name"]})'
-        else:
-            title_victim = f'{data["victim"]["character_name"]} ({data["victim"]["corporation_name"]})'
-
-        # Build Embed
-        embed = discord.Embed(title=f'{title_victim} lost their {data["ship"]["name"]}', timestamp=data['time'])
-
-        embed.set_author(name='zKillboard', icon_url='https://zkillboard.com/img/wreck.png', url=data['link'])
-        embed.set_thumbnail(url=f'https://imageserver.eveonline.com/Type/{data["ship"]["type_id"]}_64.png')
-
-        if data['final_blow']['character_name'] is None:
-            embed.add_field(name='Final Blow', value=data['final_blow']['ship_name'], inline=True)
-        else:
-            embed.add_field(name='Final Blow', value=data['final_blow']['character_name'], inline=True)
-        embed.add_field(name='\u200B', value='\u200B', inline=True)  # Empty Field
-
-        if data['final_blow']['alliance_name'] is None:
-            embed.add_field(name='Corp', value=data['final_blow']['corporation_name'], inline=True)
-        else:
-            embed.add_field(
-                name='Corp',
-                value=f'{data["final_blow"]["corporation_name"]} ({data["final_blow"]["alliance_name"]})',
-                inline=True
-            )
-
-        embed.add_field(name='Value', value=f'{data["value"]} ISK', inline=True)
-        embed.add_field(name='\u200B', value='\u200B', inline=True)  # Empty Field
-        embed.add_field(name='Damage Taken', value=data['victim']['damage_taken'], inline=True)
-
-        embed.add_field(name='System', value=data['location']['system'], inline=False)
-        embed.add_field(name='Link', value=data['link'], inline=False)
+        embed = await build_embed(data)
 
         # Send to channels
         for channel_tuple in send_channels:

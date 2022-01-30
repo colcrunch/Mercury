@@ -1,4 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
+
+import discord
+from pyswagger.primitives import Datetime
 
 
 def get_location_dict(esi_app, esi_client, system_id: int, names=False) -> dict:
@@ -38,8 +41,14 @@ def extract_mail_data(esi_app, esi_client, killmail: dict) -> dict:
             final_blow = x
     victim = killmail['victim']
     ship = {'type_id': killmail['victim']['ship_type_id']}
-    time = datetime.strptime(killmail['killmail_time'], '%Y-%m-%dT%H:%M:%SZ')
-    link = killmail['zkb']['url']
+    if type(killmail['killmail_time']) is str:
+        time = datetime.strptime(killmail['killmail_time'], '%Y-%m-%dT%H:%M:%SZ')
+    elif type(killmail['killmail_time']) is Datetime:
+        time = killmail['killmail_time'].v
+    if 'url' in killmail['zkb']:
+        link = killmail['zkb']['url']
+    else:
+        link = f'https://zkillboard.com/kill/{killmail["killmail_id"]}/'
     location = get_location_dict(esi_app, esi_client, killmail['solar_system_id'], True)
     value = killmail['zkb']['totalValue']
 
@@ -109,3 +118,49 @@ def extract_mail_data(esi_app, esi_client, killmail: dict) -> dict:
     }
 
     return processed
+
+
+async def build_embed(extracted_data: dict) -> discord.Embed:
+    """
+    Builds a discord embed for the provided data.
+        It is expected that the data passed in here is the result of passing a killmail to extract_mail_data.
+    :param extracted_data:
+    :return:
+    """
+    data = extracted_data
+    if data['victim']['character_name'] is None:
+        title_victim = f'{data["victim"]["corporation_name"]}'
+        if data['victim']['alliance_name'] is not None:
+            title_victim = f'{data["victim"]["corporation_name"]} ({data["victim"]["alliance_name"]})'
+    else:
+        title_victim = f'{data["victim"]["character_name"]} ({data["victim"]["corporation_name"]})'
+
+    # Build Embed
+    embed = discord.Embed(title=f'{title_victim} lost their {data["ship"]["name"]}', timestamp=data['time'])
+
+    embed.set_author(name='zKillboard', icon_url='https://zkillboard.com/img/wreck.png', url=data['link'])
+    embed.set_thumbnail(url=f'https://imageserver.eveonline.com/Type/{data["ship"]["type_id"]}_64.png')
+
+    if data['final_blow']['character_name'] is None:
+        embed.add_field(name='Final Blow', value=data['final_blow']['ship_name'], inline=True)
+    else:
+        embed.add_field(name='Final Blow', value=data['final_blow']['character_name'], inline=True)
+    embed.add_field(name='\u200B', value='\u200B', inline=True)  # Empty Field
+
+    if data['final_blow']['alliance_name'] is None:
+        embed.add_field(name='Corp', value=data['final_blow']['corporation_name'], inline=True)
+    else:
+        embed.add_field(
+            name='Corp',
+            value=f'{data["final_blow"]["corporation_name"]} ({data["final_blow"]["alliance_name"]})',
+            inline=True
+        )
+
+    embed.add_field(name='Value', value=f'{"{:,.2f}".format(data["value"])} ISK', inline=True)
+    embed.add_field(name='\u200B', value='\u200B', inline=True)  # Empty Field
+    embed.add_field(name='Damage Taken', value="{:,.2f}".format(data['victim']['damage_taken']), inline=True)
+
+    embed.add_field(name='System', value=data['location']['system'], inline=False)
+    embed.add_field(name='Link', value=data['link'], inline=False)
+
+    return embed
