@@ -1,5 +1,6 @@
 import traceback
 import re
+from typing import Optional
 
 import aiohttp
 import discord
@@ -10,7 +11,9 @@ from esipy.exceptions import APIException
 
 from utils import get_json
 from utils.loggers import get_logger
-from cogs.kill_watch.helpers import extract_mail_data, build_embed
+from cogs.kill_watch.helpers import extract_mail_data, build_embed as build_kill_embed
+from cogs.zkill_commands.helpers import get_char_stats_from_zkill, build_embed as build_threat_embed
+from cogs.market.helpers import get_market_data, build_embed as build_market_embed
 
 logger = get_logger(__name__)
 
@@ -51,6 +54,44 @@ class LinkListener(Cog):
 
         return km
 
+    async def _get_character_name_from_id(self, character_id: int) -> Optional[str]:
+        """
+        Returns the name of a character for a given character_id.
+            Returns None if the ID is not valid.
+        :param character_id:
+        :return:
+        """
+        name_op = self.bot.esi_app.op["get_characters_character_id"](
+            character_id=character_id
+        )
+
+        try:
+            name_response = self.esi.request(name_op)
+        except APIException:
+            logger.error(f'Error getting name for character with ID {character_id} from ESI.')
+            logger.error(traceback.print_exc())
+            return None
+
+        return name_response.data['name']
+
+    async def type_from_id(self, type_id: int) -> Optional[dict]:
+        """
+        Returns a type ID from ESI for a given name.
+            Return value of None indicates an invalid type name.
+        :param type_id:
+        :return:
+        """
+        post_op = self.bot.esi_app.op['get_universe_types_type_id'](type_id=type_id)
+
+        try:
+            response = self.esi.request(post_op)
+        except APIException:
+            logger.error(f"Issue getting Type with ID {type_id} from ESI!")
+            logger.error(traceback.print_exc())
+            return None
+
+        return response.data
+
     @Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.author == self.bot.user:
@@ -73,13 +114,33 @@ class LinkListener(Cog):
                 if re_match[4] == '/kill/':
                     km = await self._get_killmail(re_match[5])
                     data = extract_mail_data(self.bot.esi_app, self.esi, km)
-                    embed = await build_embed(data)
+                    embed = await build_kill_embed(data)
 
                     return await message.reply(embed=embed)
                 elif re_match[4] == '/character/':
-                    pass
+                    char_id = re_match[5]
+                    stats = await get_char_stats_from_zkill(char_id)
+                    if stats is None:
+                        return
+                    char_name = await self._get_character_name_from_id(char_id)
+
+                    embed = await build_threat_embed(stats, char_name, char_id)
+
+                    return await message.reply(embed=embed)
                 else:
                     return
+            elif re_match[3] == 'evemarketer':
+                type_id = re_match[5]
+                type_data = await self.type_from_id(type_id)
+                # Rename the type_id key for compatability with embed builder.
+                type_data['id'] = type_data.pop('type_id')
+                market_data = await get_market_data(type_id)
+
+                embed = await build_market_embed(type_data, market_data['resp'])
+
+                return await message.reply(embed=embed)
+            else:
+                return
 
 
 def setup(bot):
