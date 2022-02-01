@@ -34,7 +34,7 @@ if conf:
     TORTOISE_ORM["apps"]["models"]["models"] += [
         f"cogs.{name}.models"
         for name in listdir('cogs/')
-        if os.path.isdir(os.path.join('cogs/', name)) and not name.__contains__("__")
+        if os.path.isdir(os.path.join('cogs/', name)) and not name.__contains__("__") and os.path.exists(f"cogs/{name}/models.py")
     ]
 
     log_level = logging.getLevelName(config['logging']['level'])
