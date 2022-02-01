@@ -28,9 +28,7 @@ Mercury is a highly configurable bot that can be used for basic server managemen
 ## Screenshots
 
 ### Killmails
-
-####Kill:
-
+#### Kill:
 ![Kill Pic](https://i.imgur.com/Ho5Hteh.png)
 #### Loss:
 ![Loss Pic](https://i.imgur.com/GXdtxHe.png)
