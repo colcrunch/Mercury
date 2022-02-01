@@ -48,7 +48,7 @@ class TheraWatch(Cog, command_attrs=dict(hidden=True)):
         """
         systems = await TheraEveSystem.all()
         constellations = await TheraEveConstellation.all()
-        regions = await  TheraEveRegion.all()
+        regions = await TheraEveRegion.all()
         self.channels = {
             'systems': {x.system_id: await x.channels.all() for x in systems},
             'constellations': {x.constellation_id: await x.channels.all() for x in constellations},
