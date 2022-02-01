@@ -24,6 +24,7 @@ Mercury is a highly configurable bot that can be used for basic server managemen
 * Get quick info on any character, corporation, alliance, or system in the game.
 * Check your (or an enemy's) zkillboard stats.
 * Automatically post zkillboard stats, kill data, and market data whenever a relevant link is posted in discord.
+* Subscribe to CCP news feeds to get the latest patchnotes, devblogs, and news straight in your discord. 
 
 ## Screenshots
 
@@ -48,6 +49,9 @@ Mercury is a highly configurable bot that can be used for basic server managemen
 
 ### Market Data
 ![market pic](https://i.imgur.com/CNW1rjD.png)
+
+### News Post
+![news post](https://i.imgur.com/zUI9qvJ.png)
 
 ## Installation
 ### Requirements
