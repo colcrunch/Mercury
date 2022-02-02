@@ -12,7 +12,6 @@ import os
 import traceback
 import shutil
 import datetime
-import logging
 
 
 def setup():
