@@ -33,7 +33,7 @@ class KillWatch(Cog, command_attrs=dict(hidden=True)):
             'ship': KillEveShipType
         }
 
-        self.channels = None
+        self.channels = self.bot.loop.create_task(self.load_channels())
 
         self.esi = EsiClient(
             retry_requests=True,
@@ -41,7 +41,7 @@ class KillWatch(Cog, command_attrs=dict(hidden=True)):
             raw_body_only=False
         )
 
-        self.ws_task = asyncio.create_task(self.listen())
+        self.ws_task = self.bot.loop.create_task(self.listen())
 
     def cog_unload(self):
         self.ws_task.cancel()
