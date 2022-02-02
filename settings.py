@@ -13,7 +13,6 @@ import logging
 # Load the bot config.
 conf = False
 if path.exists('config.toml'):
-    log_level = "INFO"
     conf = True
     with open("config.toml", "r") as c:
         config = loads(c.read())
@@ -41,3 +40,4 @@ if conf:
     log_level = logging.getLevelName(config['logging']['level'])
 else:
     TORTOISE_ORM = None
+    log_level = "INFO"
