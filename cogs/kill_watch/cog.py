@@ -33,7 +33,8 @@ class KillWatch(Cog, command_attrs=dict(hidden=True)):
             'ship': KillEveShipType
         }
 
-        self.channels = self.bot.loop.create_task(self.load_channels())
+        self.channels = None
+        self.bot.loop.create_task(self.load_channels())
 
         self.esi = EsiClient(
             retry_requests=True,
