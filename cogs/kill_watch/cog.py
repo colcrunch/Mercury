@@ -76,6 +76,8 @@ class KillWatch(Cog, command_attrs=dict(hidden=True)):
         :param id_obj:
         :return:
         """
+        if self.channels is None:
+            await self.load_channels()
         plural = f'{id_type}s'
         self.channels[plural][id_obj.pk] = await id_obj.channels.all()
 
@@ -295,8 +297,7 @@ class KillWatch(Cog, command_attrs=dict(hidden=True)):
         Subscribe to the killstream on zKill's websocket
         :return:
         """
-        if self.channels is None:
-            await self.load_channels()
+        await self.load_channels()
         uri = 'wss://zkillboard.com/websocket/'
 
         ws = await websockets.connect(uri, ssl=True)
