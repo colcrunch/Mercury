@@ -342,7 +342,7 @@ class TheraWatch(Cog, command_attrs=dict(hidden=True)):
             hole = list(resp['resp'])[0]
             hole_id = hole['id']
             source = hole['sourceSolarSystem']
-            if self.last_thera == hole_id:
+            if self.last_thera <= hole_id:
                 pass    # Do nothing
             elif source['name'] == "Thera":
                 self.last_thera = hole_id   # Ensure we keep track of the last thera id
@@ -406,6 +406,7 @@ class TheraWatch(Cog, command_attrs=dict(hidden=True)):
         embed = discord.Embed(title="Thera Alert", color=discord.Color.blurple())
         embed.set_author(name='EVE-Scout', icon_url='http://games.chruker.dk/eve_online/graphics/ids/128/20956.jpg')
         embed.set_thumbnail(url='https://www.eve-scout.com/images/eve-scout-logo.png')
+        embed.set_footer(text=f"ID: {hole['id']}")
 
         embed.add_field(name='Region', value=region, inline=True)
         embed.add_field(name='\u200B', value='\u200B', inline=True)  # Empty Field
