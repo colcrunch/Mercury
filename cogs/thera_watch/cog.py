@@ -112,8 +112,8 @@ class TheraWatch(Cog, command_attrs=dict(hidden=True)):
         plural = f'{location_type}s'
 
         # Check the DB for the item
-        if await self.TYPE_MODELS[location_type].filter(name=location_name).exists():
-            return await self.TYPE_MODELS[location_type].filter(name=location_name).first()
+        if await self.TYPE_MODELS[location_type].filter(name__iexact=location_name).exists():
+            return await self.TYPE_MODELS[location_type].filter(name__iexact=location_name).first()
 
         if location_name.lower() != "all regions":
             # Get the system ID from ESI.

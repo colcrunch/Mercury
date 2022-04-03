@@ -91,8 +91,8 @@ class KillWatch(Cog, command_attrs=dict(hidden=True)):
         plural = f'{track_type}s'
 
         # Check if the item is already in the db and return it
-        if await self.TYPE_MODELS[track_type].filter(name=to_track).exists():
-            return await self.TYPE_MODELS[track_type].filter(name=to_track).first()
+        if await self.TYPE_MODELS[track_type].filter(name__iexact=to_track).exists():
+            return await self.TYPE_MODELS[track_type].filter(name__iexact=to_track).first()
 
         # If its not in the database, get info from ESI and save a DB record for it.
         cat = 'inventory_types' if track_type == 'ship' else plural
