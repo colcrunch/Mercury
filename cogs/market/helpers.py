@@ -51,9 +51,9 @@ async def build_embed(type_data: dict, market_data: dict) -> discord.Embed:
 
     # Fields
 
-    embed.add_field(name="Sell Min", value="{:,.2f}".format(float(data['sell']['min'])), inline=True)
+    embed.add_field(name="Sell Min", value="{:,.2f} ISK".format(float(data['sell']['min'])), inline=True)
     embed.add_field(name='\u200B', value='\u200B', inline=True)  # Empty Field
-    embed.add_field(name="Sell Max", value="{:,.2f}".format(float(data['sell']['max'])), inline=True)
+    embed.add_field(name="Sell Max", value="{:,.2f} ISK".format(float(data['sell']['max'])), inline=True)
 
     embed.add_field(
         name='Sell Avg',
@@ -64,7 +64,7 @@ async def build_embed(type_data: dict, market_data: dict) -> discord.Embed:
     if type_name.lower() == 'plex':
         embed.add_field(
             name='Monthly Sub Sell Avg',
-            value='{:,.2f}'.format(round(float(data['sell']['weightedAverage']) * 500, 2)),
+            value='{:,.2f} ISK'.format(round(float(data['sell']['weightedAverage']) * 500, 2)),
             inline=True
         )
     else:
@@ -72,15 +72,15 @@ async def build_embed(type_data: dict, market_data: dict) -> discord.Embed:
 
     embed.add_field(name='\u200B', value='\u200B', inline=False)  # Empty Field
 
-    embed.add_field(name='Buy Min', value="{:,.2f}".format(float(data['buy']['min'])), inline=True)
+    embed.add_field(name='Buy Min', value="{:,.2f} ISK".format(float(data['buy']['min'])), inline=True)
     embed.add_field(name='\u200B', value='\u200B', inline=True)  # Empty Field
-    embed.add_field(name='Buy Max', value="{:,.2f}".format(float(data['sell']['max'])), inline=True)
+    embed.add_field(name='Buy Max', value="{:,.2f} ISK".format(float(data['buy']['max'])), inline=True)
 
-    embed.add_field(name='Buy Avg', value="{:,.2f}".format(float(data['sell']['weightedAverage'])), inline=True)
+    embed.add_field(name='Buy Avg', value="{:,.2f} ISK".format(float(data['buy']['weightedAverage'])), inline=True)
     if type_name.lower() == 'plex':
         embed.add_field(
             name='Monthly Sub Buy Avg',
-            value='{:,.2f}'.format(round(float(data['buy']['weightedAverage']) * 500, 2)),
+            value='{:,.2f} ISK'.format(round(float(data['buy']['weightedAverage']) * 500, 2)),
             inline=True
         )
 
